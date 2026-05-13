@@ -79,6 +79,7 @@ export default function LoginPage() {
               </span>
             </div>
           </div>
+          <a href="/forgot-password" className="forgot-link">Forgot password?</a>
 
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? 'Signing in...' : 'Login'}

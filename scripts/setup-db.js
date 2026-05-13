@@ -42,6 +42,18 @@ async function setup() {
   `;
   console.log('✅ listings table ready');
 
+  await sql`
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      id SERIAL PRIMARY KEY,
+      user_id INT REFERENCES users(id) ON DELETE CASCADE,
+      token VARCHAR(255) UNIQUE NOT NULL,
+      expires_at TIMESTAMPTZ NOT NULL,
+      used BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `;
+  console.log('✅ password_reset_tokens table ready');
+
   // Seed admin account
   const adminEmail = 'admin@bhfinder.com';
   const existing = await sql`SELECT id FROM users WHERE email = ${adminEmail}`;
