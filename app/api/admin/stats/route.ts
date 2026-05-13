@@ -9,12 +9,25 @@ export async function GET() {
   }
 
   try {
-    const [listingCount] = await sql`SELECT COUNT(*)::int as count FROM listings`;
+    // Auto-expire listings older than 30 days
+    await sql`
+      UPDATE listings SET status = 'inactive'
+      WHERE status = 'active' AND created_at < NOW() - INTERVAL '30 days'
+    `;
+
+    const [totals] = await sql`
+      SELECT
+        COUNT(*)::int AS total,
+        COUNT(*) FILTER (WHERE status = 'active')::int AS active,
+        COUNT(*) FILTER (WHERE status = 'inactive')::int AS inactive
+      FROM listings
+    `;
     const [userCount] = await sql`SELECT COUNT(*)::int as count FROM users`;
 
     return NextResponse.json({
-      totalListings: listingCount.count,
-      activeListings: listingCount.count,
+      totalListings: totals.total,
+      activeListings: totals.active,
+      inactiveListings: totals.inactive,
       totalUsers: userCount.count,
     });
   } catch (error) {

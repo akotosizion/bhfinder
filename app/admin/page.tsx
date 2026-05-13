@@ -10,6 +10,7 @@ interface Listing {
   location: string;
   image_url: string;
   owner_name: string;
+  status: string;
   created_at: string;
 }
 
@@ -25,6 +26,7 @@ interface User {
 interface Stats {
   totalListings: number;
   activeListings: number;
+  inactiveListings: number;
   totalUsers: number;
 }
 
@@ -34,7 +36,7 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<'listings' | 'users'>('listings');
   const [listings, setListings] = useState<Listing[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [stats, setStats] = useState<Stats>({ totalListings: 0, activeListings: 0, totalUsers: 0 });
+  const [stats, setStats] = useState<Stats>({ totalListings: 0, activeListings: 0, inactiveListings: 0, totalUsers: 0 });
   const [loading, setLoading] = useState(true);
 
   // Verify admin session
@@ -91,6 +93,11 @@ export default function AdminPage() {
   const deleteListing = async (id: number) => {
     if (!confirm('Delete this listing?')) return;
     await fetch(`/api/listings/${id}`, { method: 'DELETE' });
+    loadData();
+  };
+
+  const toggleStatus = async (id: number) => {
+    await fetch(`/api/listings/${id}`, { method: 'PATCH' });
     loadData();
   };
 
@@ -172,7 +179,7 @@ export default function AdminPage() {
             <div className="stat-icon red"><i className="ph ph-x-circle" /></div>
             <div>
               <div className="stat-label">Inactive</div>
-              <div className="stat-value">0</div>
+              <div className="stat-value">{loading ? '—' : stats.inactiveListings}</div>
             </div>
           </div>
           <div className="stat-card">
@@ -224,8 +231,17 @@ export default function AdminPage() {
                         <td>{l.owner_name}</td>
                         <td>{l.location}</td>
                         <td style={{ fontWeight: 700 }}>{l.price}</td>
-                        <td><span className="status-badge status-active">active</span></td>
                         <td>
+                          <span className={`status-badge status-${l.status}`}>{l.status}</span>
+                        </td>
+                        <td style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                          <button
+                            className={l.status === 'active' ? 'btn-icon-warn' : 'btn-icon-ok'}
+                            onClick={() => toggleStatus(l.id)}
+                            title={l.status === 'active' ? 'Mark inactive' : 'Mark active'}
+                          >
+                            <i className={`ph ${l.status === 'active' ? 'ph-pause-circle' : 'ph-play-circle'}`} />
+                          </button>
                           <button className="btn-icon-del" onClick={() => deleteListing(l.id)} title="Delete listing">
                             <i className="ph ph-trash" />
                           </button>

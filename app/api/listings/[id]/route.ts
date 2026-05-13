@@ -67,3 +67,32 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
+
+// PATCH toggle listing status (admin only)
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await requireAuth();
+  if (!session || session.role !== 'admin') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  const listingId = parseInt(params.id);
+
+  try {
+    const listing = await sql`SELECT status FROM listings WHERE id = ${listingId}`;
+    if (!listing.length) {
+      return NextResponse.json({ error: 'Listing not found' }, { status: 404 });
+    }
+
+    const newStatus = listing[0].status === 'active' ? 'inactive' : 'active';
+
+    const result = await sql`
+      UPDATE listings SET status = ${newStatus} WHERE id = ${listingId} RETURNING status
+    `;
+
+    return NextResponse.json({ success: true, status: result[0].status });
+  } catch (error) {
+    console.error('Toggle status error:', error);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  }
+}
+

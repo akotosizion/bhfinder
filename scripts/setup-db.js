@@ -36,10 +36,13 @@ async function setup() {
       contact_number VARCHAR(20),
       amenities TEXT[],
       image_url TEXT,
+      status VARCHAR(10) DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
       user_id INT REFERENCES users(id) ON DELETE CASCADE,
       created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `;
+  // Add status column to existing listings table if missing
+  await sql`ALTER TABLE listings ADD COLUMN IF NOT EXISTS status VARCHAR(10) DEFAULT 'active' CHECK (status IN ('active', 'inactive'))`;
   console.log('✅ listings table ready');
 
   await sql`

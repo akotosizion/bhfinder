@@ -2,9 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { requireAuth } from '@/lib/auth';
 
-// GET all listings (public)
+// GET all listings — auto-marks listings older than 30 days as inactive
 export async function GET() {
   try {
+    // Auto-expire listings older than 30 days
+    await sql`
+      UPDATE listings
+      SET status = 'inactive'
+      WHERE status = 'active'
+        AND created_at < NOW() - INTERVAL '30 days'
+    `;
+
     const listings = await sql`
       SELECT l.*, u.username as owner_name
       FROM listings l
@@ -33,8 +41,8 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await sql`
-      INSERT INTO listings (title, description, price, location, bedrooms, bathrooms, contact_number, amenities, image_url, user_id)
-      VALUES (${title}, ${description}, ${price}, ${location}, ${bedrooms || 0}, ${bathrooms || 0}, ${contact_number}, ${amenities || []}, ${image_url}, ${session.userId})
+      INSERT INTO listings (title, description, price, location, bedrooms, bathrooms, contact_number, amenities, image_url, user_id, status)
+      VALUES (${title}, ${description}, ${price}, ${location}, ${bedrooms || 0}, ${bathrooms || 0}, ${contact_number}, ${amenities || []}, ${image_url}, ${session.userId}, 'active')
       RETURNING *
     `;
 
