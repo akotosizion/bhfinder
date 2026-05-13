@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getIronSession } from 'iron-session';
-import { SessionData, sessionOptions } from '@/lib/auth';
+import { getToken } from 'next-auth/jwt';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Protected routes
   const isAdminRoute = pathname.startsWith('/admin');
   const isDashboardRoute = pathname.startsWith('/dashboard');
 
@@ -14,23 +12,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const response = NextResponse.next();
-  const session = await getIronSession<SessionData>(request, response, sessionOptions);
+  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
 
   // Must be logged in for dashboard
-  if (isDashboardRoute && !session.isLoggedIn) {
+  if (isDashboardRoute && !token) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
   // Must be admin for admin routes
-  if (isAdminRoute && session.role !== 'admin') {
-    if (!session.isLoggedIn) {
-      return NextResponse.redirect(new URL('/login', request.url));
+  if (isAdminRoute) {
+    if (!token) return NextResponse.redirect(new URL('/login', request.url));
+    if ((token as any).role !== 'admin') {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
-    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {

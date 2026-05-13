@@ -1,43 +1,30 @@
-import { SessionOptions, getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
-
-export interface SessionData {
-  userId?: number;
-  username?: string;
-  email?: string;
-  role?: 'admin' | 'user';
-  isLoggedIn?: boolean;
-}
-
-export const sessionOptions: SessionOptions = {
-  password: process.env.SESSION_SECRET as string,
-  cookieName: 'bhfinder_session',
-  cookieOptions: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-  },
-};
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export async function getSession() {
-  // Next.js 14 — cookies() is synchronous
-  const session = await getIronSession<SessionData>(cookies(), sessionOptions);
-  return session;
+  return await getServerSession(authOptions);
 }
 
-export async function requireAuth(): Promise<SessionData | null> {
+export async function requireAuth() {
   const session = await getSession();
-  if (!session.isLoggedIn || !session.userId) {
-    return null;
-  }
-  return session;
+  if (!session?.user) return null;
+  return {
+    userId: (session.user as any).userId,
+    username: (session.user as any).username,
+    email: session.user.email,
+    role: (session.user as any).role,
+    isLoggedIn: true,
+  };
 }
 
-export async function requireAdmin(): Promise<SessionData | null> {
+export async function requireAdmin() {
   const session = await getSession();
-  if (!session.isLoggedIn || session.role !== 'admin') {
-    return null;
-  }
-  return session;
+  if (!session?.user || (session.user as any).role !== 'admin') return null;
+  return {
+    userId: (session.user as any).userId,
+    username: (session.user as any).username,
+    email: session.user.email,
+    role: (session.user as any).role as 'admin',
+    isLoggedIn: true,
+  };
 }

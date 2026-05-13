@@ -14,7 +14,7 @@
     "react-dom": "^18",
     "@neondatabase/serverless": "^0.9.4",
     "bcryptjs": "^2.4.3",
-    "iron-session": "^8.0.1",
+    "next-auth": "^4.24.7",
     "dotenv": "^16.4.5"
   },
   "devDependencies": {

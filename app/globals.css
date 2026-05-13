@@ -849,3 +849,50 @@ body.modal-open { overflow: hidden; }
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .admin-main { padding: 20px; }
 }
+
+/* =========== GOOGLE BUTTON =========== */
+.btn-google {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 13px 16px;
+  background: white;
+  border: 1.5px solid #dadce0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition);
+  color: #3c4043;
+  margin-bottom: 4px;
+}
+.btn-google:hover {
+  background: #f8f9fa;
+  border-color: #bbb;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.btn-google:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* =========== DIVIDER =========== */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 18px 0;
+  color: #bbb;
+  font-size: 0.82rem;
+}
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e8e8e8;
+}
+
