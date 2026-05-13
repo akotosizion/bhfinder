@@ -12,6 +12,17 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  // If already logged in, redirect away
+  useEffect(() => {
+    fetch('/api/auth/me', { cache: 'no-store' })
+      .then(r => r.json())
+      .then(data => {
+        if (data.isLoggedIn) {
+          router.replace(data.role === 'admin' ? '/admin' : '/dashboard');
+        }
+      });
+  }, [router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
