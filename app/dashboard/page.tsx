@@ -75,8 +75,10 @@ export default function DashboardPage() {
     return () => window.removeEventListener('pageshow', handlePageShow);
   }, [checkSession]);
 
-  // Disable browser back button while logged in
+  // Disable browser back button for ALL login methods (credentials + Google OAuth)
+  // replaceState collapses OAuth redirect history, pushState traps the back button
   useEffect(() => {
+    window.history.replaceState(null, '', window.location.href);
     window.history.pushState(null, '', window.location.href);
     const handlePopState = () => {
       window.history.pushState(null, '', window.location.href);

@@ -59,8 +59,9 @@ export default function AdminPage() {
     return () => window.removeEventListener('pageshow', handlePageShow);
   }, [checkSession]);
 
-  // Disable browser back button while logged in as admin
+  // Disable browser back button for ALL login methods (credentials + Google OAuth)
   useEffect(() => {
+    window.history.replaceState(null, '', window.location.href);
     window.history.pushState(null, '', window.location.href);
     const handlePopState = () => {
       window.history.pushState(null, '', window.location.href);

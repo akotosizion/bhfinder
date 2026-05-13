@@ -38,7 +38,7 @@ export default function RegisterPage() {
       password: form.password,
       redirect: false,
     });
-    router.push('/dashboard');
+    router.replace('/dashboard');
   };
 
   const handleGoogle = async () => {
