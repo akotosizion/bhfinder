@@ -234,17 +234,19 @@ export default function AdminPage() {
                         <td>
                           <span className={`status-badge status-${l.status}`}>{l.status}</span>
                         </td>
-                        <td style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                          <button
-                            className={l.status === 'active' ? 'btn-icon-warn' : 'btn-icon-ok'}
-                            onClick={() => toggleStatus(l.id)}
-                            title={l.status === 'active' ? 'Mark inactive' : 'Mark active'}
-                          >
-                            <i className={`ph ${l.status === 'active' ? 'ph-pause-circle' : 'ph-play-circle'}`} />
-                          </button>
-                          <button className="btn-icon-del" onClick={() => deleteListing(l.id)} title="Delete listing">
-                            <i className="ph ph-trash" />
-                          </button>
+                        <td>
+                          <div style={{ display: 'flex', gap: 6, alignItems: 'center', justifyContent: 'center' }}>
+                            <button
+                              className={l.status === 'active' ? 'btn-icon-warn' : 'btn-icon-ok'}
+                              onClick={() => toggleStatus(l.id)}
+                              title={l.status === 'active' ? 'Mark inactive' : 'Mark active'}
+                            >
+                              <i className={`ph ${l.status === 'active' ? 'ph-pause-circle' : 'ph-play-circle'}`} />
+                            </button>
+                            <button className="btn-icon-del" onClick={() => deleteListing(l.id)} title="Delete listing">
+                              <i className="ph ph-trash" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
