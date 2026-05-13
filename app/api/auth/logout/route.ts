@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getSession } from '@/lib/auth';
 
+// Logout is now handled by NextAuth's signOut() on the client
+// This route is kept for backward compatibility only
 export async function POST() {
-  const session = await getSession();
-  session.destroy();
   return NextResponse.json({ success: true });
 }
