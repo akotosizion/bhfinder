@@ -47,6 +47,7 @@ export default function DashboardPage() {
   const [form, setForm] = useState(DEFAULT_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
+  const [imagePreview, setImagePreview] = useState<string>('');
 
   // Load session
   useEffect(() => {
@@ -94,6 +95,7 @@ export default function DashboardPage() {
     setEditingId(null);
     setForm(DEFAULT_FORM);
     setFormError('');
+    setImagePreview('');
     setShowViewModal(false);
     setShowPostModal(true);
   };
@@ -112,9 +114,26 @@ export default function DashboardPage() {
       amenities: listing.amenities || [],
       image_url: listing.image_url || '',
     });
+    setImagePreview(listing.image_url || '');
     setFormError('');
     setShowViewModal(false);
     setShowPostModal(true);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setFormError('Image must be under 5MB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result as string;
+      setImagePreview(base64);
+      setForm(prev => ({ ...prev, image_url: base64 }));
+    };
+    reader.readAsDataURL(file);
   };
 
   const closeAll = () => {
@@ -400,8 +419,29 @@ export default function DashboardPage() {
                 <input type="text" placeholder="+63 XXX XXX XXXX" value={form.contact_number} onChange={e => setForm({ ...form, contact_number: e.target.value })} />
               </div>
               <div className="form-group">
-                <label>Image URL</label>
-                <input type="url" placeholder="https://example.com/image.jpg" value={form.image_url} onChange={e => setForm({ ...form, image_url: e.target.value })} />
+                <label>Photo</label>
+                <div style={{ border: '2px dashed #e0e0e0', borderRadius: 8, padding: 16, textAlign: 'center', cursor: 'pointer', position: 'relative', background: '#fafafa', transition: 'border-color 0.2s' }}
+                  onMouseOver={e => (e.currentTarget.style.borderColor = '#000')}
+                  onMouseOut={e => (e.currentTarget.style.borderColor = '#e0e0e0')}
+                >
+                  {imagePreview ? (
+                    <div style={{ position: 'relative' }}>
+                      <img src={imagePreview} alt="Preview" style={{ width: '100%', height: 160, objectFit: 'cover', borderRadius: 6, display: 'block' }} />
+                      <button type="button" onClick={() => { setImagePreview(''); setForm(prev => ({ ...prev, image_url: '' })); }}
+                        style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', borderRadius: '50%', width: 28, height: 28, cursor: 'pointer', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >×</button>
+                    </div>
+                  ) : (
+                    <label style={{ cursor: 'pointer', display: 'block' }}>
+                      <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
+                      <div style={{ color: '#888' }}>
+                        <div style={{ fontSize: '2rem', marginBottom: 8 }}>📷</div>
+                        <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 4 }}>Click to upload photo</div>
+                        <div style={{ fontSize: '0.78rem', color: '#aaa' }}>JPG, PNG, WEBP — max 5MB</div>
+                      </div>
+                    </label>
+                  )}
+                </div>
               </div>
               <div className="form-group">
                 <label>Amenities</label>
