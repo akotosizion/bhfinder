@@ -836,19 +836,104 @@ body.modal-open { overflow: hidden; }
 }
 
 /* =========== RESPONSIVE =========== */
+
+/* Tablet */
 @media (max-width: 900px) {
-  .view-modal { grid-template-columns: 1fr; }
-  .modal-image-pane { height: 250px; }
+  .view-modal {
+    grid-template-columns: 1fr;
+    max-height: 95vh;
+    overflow-y: auto;
+  }
+  .modal-image-pane { height: 260px; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .admin-sidebar { display: none; }
+  .property-grid { grid-template-columns: repeat(2, 1fr); }
 }
-@media (max-width: 600px) {
-  .navbar { padding: 12px 20px; }
-  .property-grid { grid-template-columns: 1fr; }
+
+/* Mobile */
+@media (max-width: 640px) {
+  /* Navbar */
+  .navbar { padding: 12px 16px; }
+  .logo span { font-size: 0.95rem; }
+  .btn-post { padding: 8px 14px; font-size: 0.82rem; }
+  .nav-actions { gap: 10px; }
+  .user-chip span { display: none; }
+
+  /* Auth pages */
+  .auth-page { padding: 16px; align-items: flex-start; padding-top: 40px; }
+  .auth-card { padding: 28px 20px; border-radius: 12px; }
+  .auth-logo { font-size: 1.2rem; margin-bottom: 24px; }
+  .auth-title { font-size: 1.2rem; }
+
+  /* Search */
+  .search-section { padding: 0 12px; margin: 16px auto; }
+  .search-bar input { padding: 12px 10px; font-size: 0.88rem; }
+
+  /* Grid — 1 column on mobile */
+  .property-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 0 12px;
+    margin-bottom: 40px;
+  }
+
+  /* Cards */
+  .card-image { height: 190px; }
+  .card-content { padding: 14px 16px; }
+
+  /* View Modal — full screen */
+  .modal-overlay { padding: 0; align-items: flex-end; }
+  .view-modal {
+    border-radius: 20px 20px 0 0;
+    max-height: 95vh;
+    width: 100%;
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+  .modal-image-pane { height: 220px; }
+  .modal-info-pane { padding: 20px 20px 32px; max-height: none; }
+  .modal-close { top: 12px; right: 14px; font-size: 1.6rem; }
+  .modal-title { font-size: 1.2rem; }
+  .modal-price { font-size: 1.1rem; }
+  .amenities-list { grid-template-columns: repeat(2, 1fr); }
+
+  /* Post Modal — full screen */
+  .post-modal {
+    border-radius: 20px 20px 0 0;
+    max-height: 95vh;
+    padding: 20px 16px 32px;
+    width: 100%;
+  }
+  .form-row { grid-template-columns: 1fr; gap: 0; }
   .amenities-grid { grid-template-columns: repeat(3, 1fr); }
-  .stats-grid { grid-template-columns: 1fr 1fr; }
-  .admin-main { padding: 20px; }
+
+  /* Admin */
+  .admin-main { padding: 16px; }
+  .admin-topbar { flex-direction: column; align-items: flex-start; gap: 12px; margin-bottom: 20px; }
+  .admin-topbar h1 { font-size: 1.3rem; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .stat-card { padding: 14px; gap: 12px; }
+  .stat-value { font-size: 1.3rem; }
+  .admin-table-wrap { overflow-x: auto; }
+  .admin-table { min-width: 600px; }
+
+  /* Hero */
+  .hero-content h1 { font-size: 1.8rem; letter-spacing: 1px; }
+  .hero-content p { font-size: 0.95rem; }
+  .hero-nav { flex-direction: column; align-items: center; gap: 10px; }
+  .btn-login-hero, .btn-signup-hero { width: 100%; max-width: 280px; padding: 12px 24px; }
+
+  /* Scroll top */
+  .scroll-top { bottom: 16px; right: 16px; width: 40px; height: 40px; font-size: 1rem; }
 }
+
+/* Very small screens */
+@media (max-width: 380px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .amenities-grid { grid-template-columns: repeat(2, 1fr); }
+  .modal-specs { flex-wrap: wrap; gap: 10px; }
+}
+
 
 /* =========== GOOGLE BUTTON =========== */
 .btn-google {
