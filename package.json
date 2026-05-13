@@ -15,11 +15,12 @@
     "@neondatabase/serverless": "^0.9.4",
     "bcryptjs": "^2.4.3",
     "next-auth": "^4.24.7",
-    "resend": "^3.2.0",
+    "nodemailer": "^7.0.0",
     "dotenv": "^16.4.5"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
+    "@types/nodemailer": "^6.4.14",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

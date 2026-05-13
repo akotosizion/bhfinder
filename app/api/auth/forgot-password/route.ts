@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import { neon } from '@neondatabase/serverless';
 import crypto from 'crypto';
 
@@ -18,36 +18,41 @@ export async function POST(req: NextRequest) {
       WHERE email = ${identifier} OR username = ${identifier}
     `;
 
-    // Always return success to prevent user enumeration
+    // Always return success — prevents user enumeration
     if (!users.length) {
       return NextResponse.json({ success: true });
     }
 
     const user = users[0];
 
-    // Generate secure token (expires in 1 hour)
+    // Generate secure token (1 hour expiry)
     const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
-    // Invalidate old tokens for this user
+    // Invalidate old tokens, store new one
     await sql`DELETE FROM password_reset_tokens WHERE user_id = ${user.id}`;
-
-    // Store new token
     await sql`
       INSERT INTO password_reset_tokens (user_id, token, expires_at)
       VALUES (${user.id}, ${token}, ${expiresAt.toISOString()})
     `;
 
-    // Send reset email
-    const resend = new Resend(process.env.RESEND_API_KEY!);
+    // Send email via Gmail SMTP
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
     const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`;
 
-    await resend.emails.send({
-      from: 'BH Finder <onboarding@resend.dev>',
+    await transporter.sendMail({
+      from: `"BH Finder" <${process.env.EMAIL_USER}>`,
       to: user.email,
       subject: 'Reset your BH Finder password',
       html: `
-        <div style="font-family: Inter, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #fff; border-radius: 12px;">
+        <div style="font-family: Inter, Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #fff; border-radius: 12px; border: 1px solid #eee;">
           <h1 style="font-size: 22px; font-weight: 800; letter-spacing: 2px; margin-bottom: 8px;">BH FINDER</h1>
           <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">Reset your password</h2>
           <p style="color: #555; font-size: 15px; line-height: 1.6; margin-bottom: 28px;">
@@ -71,6 +76,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Forgot password error:', error);
-    return NextResponse.json({ success: true }); // Still return success
+    return NextResponse.json({ success: true }); // Still return success for security
   }
 }
