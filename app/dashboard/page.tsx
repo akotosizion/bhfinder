@@ -39,6 +39,10 @@ export default function DashboardPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [filtered, setFiltered] = useState<Listing[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showFilter, setShowFilter] = useState(false);
+  const [filterBedrooms, setFilterBedrooms] = useState<string>('any');
+  const [filterMaxPrice, setFilterMaxPrice] = useState<string>('');
+  const [filterAmenity, setFilterAmenity] = useState<string>('any');
   const [loading, setLoading] = useState(true);
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -83,15 +87,21 @@ export default function DashboardPage() {
 
   useEffect(() => { loadListings(); }, [loadListings]);
 
-  // Search filter
+  // Search + filter
   useEffect(() => {
     const q = searchQuery.toLowerCase();
-    setFiltered(listings.filter(l =>
-      l.title.toLowerCase().includes(q) ||
-      l.location.toLowerCase().includes(q) ||
-      (l.description || '').toLowerCase().includes(q)
-    ));
-  }, [searchQuery, listings]);
+    const maxPrice = filterMaxPrice ? parseFloat(filterMaxPrice) : null;
+    setFiltered(listings.filter(l => {
+      const matchSearch =
+        l.title.toLowerCase().includes(q) ||
+        l.location.toLowerCase().includes(q) ||
+        (l.description || '').toLowerCase().includes(q);
+      const matchBeds = filterBedrooms === 'any' || l.bedrooms >= parseInt(filterBedrooms);
+      const matchPrice = !maxPrice || parseFloat(l.price.replace(/[^0-9.]/g, '')) <= maxPrice;
+      const matchAmenity = filterAmenity === 'any' || (l.amenities || []).includes(filterAmenity);
+      return matchSearch && matchBeds && matchPrice && matchAmenity;
+    }));
+  }, [searchQuery, listings, filterBedrooms, filterMaxPrice, filterAmenity]);
 
   // Modal body lock
   useEffect(() => {
@@ -250,10 +260,56 @@ export default function DashboardPage() {
             onChange={e => setSearchQuery(e.target.value)}
           />
         </div>
-        <button className="filter-btn">
+        <button
+          className={`filter-btn ${showFilter ? 'filter-btn-active' : ''}`}
+          onClick={() => setShowFilter(v => !v)}
+          title="Filters"
+        >
           <i className="ph ph-sliders-horizontal" />
+          {(filterBedrooms !== 'any' || filterMaxPrice || filterAmenity !== 'any') && (
+            <span className="filter-dot" />
+          )}
         </button>
       </section>
+
+      {/* FILTER PANEL */}
+      {showFilter && (
+        <div className="filter-panel">
+          <div className="filter-group">
+            <label>Min. Bedrooms</label>
+            <select value={filterBedrooms} onChange={e => setFilterBedrooms(e.target.value)}>
+              <option value="any">Any</option>
+              <option value="1">1+</option>
+              <option value="2">2+</option>
+              <option value="3">3+</option>
+              <option value="4">4+</option>
+            </select>
+          </div>
+          <div className="filter-group">
+            <label>Max Price (₱/mo)</label>
+            <input
+              type="number"
+              placeholder="e.g. 5000"
+              value={filterMaxPrice}
+              onChange={e => setFilterMaxPrice(e.target.value)}
+              min="0"
+            />
+          </div>
+          <div className="filter-group">
+            <label>Amenity</label>
+            <select value={filterAmenity} onChange={e => setFilterAmenity(e.target.value)}>
+              <option value="any">Any</option>
+              {AMENITY_OPTIONS.map(a => <option key={a} value={a}>{a}</option>)}
+            </select>
+          </div>
+          <button
+            className="filter-clear"
+            onClick={() => { setFilterBedrooms('any'); setFilterMaxPrice(''); setFilterAmenity('any'); }}
+          >
+            Clear Filters
+          </button>
+        </div>
+      )}
 
       {/* LISTINGS GRID */}
       <main className="property-grid">
