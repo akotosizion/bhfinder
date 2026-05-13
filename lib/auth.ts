@@ -1,6 +1,5 @@
 import { SessionOptions, getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
 
 export interface SessionData {
   userId?: number;
@@ -22,11 +21,12 @@ export const sessionOptions: SessionOptions = {
 };
 
 export async function getSession() {
+  // Next.js 14 — cookies() is synchronous
   const session = await getIronSession<SessionData>(cookies(), sessionOptions);
   return session;
 }
 
-export async function requireAuth(req?: NextRequest): Promise<SessionData | null> {
+export async function requireAuth(): Promise<SessionData | null> {
   const session = await getSession();
   if (!session.isLoggedIn || !session.userId) {
     return null;
