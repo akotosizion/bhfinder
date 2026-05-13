@@ -53,6 +53,7 @@ export default function DashboardPage() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [imagePreview, setImagePreview] = useState<string>('');
+  const [uploading, setUploading] = useState(false);
 
   const checkSession = useCallback(async () => {
     const res = await fetch('/api/auth/me', { cache: 'no-store' });
@@ -155,20 +156,35 @@ export default function DashboardPage() {
     setShowPostModal(true);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      setFormError('Image must be under 5MB.');
+    if (file.size > 10 * 1024 * 1024) {
+      setFormError('Image must be under 10MB.');
       return;
     }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64 = reader.result as string;
-      setImagePreview(base64);
-      setForm(prev => ({ ...prev, image_url: base64 }));
-    };
-    reader.readAsDataURL(file);
+    setUploading(true);
+    setFormError('');
+    try {
+      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+      const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', uploadPreset!);
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        { method: 'POST', body: formData }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || 'Upload failed');
+      setImagePreview(data.secure_url);
+      setForm(prev => ({ ...prev, image_url: data.secure_url }));
+    } catch (err) {
+      setFormError('Image upload failed. Check your Cloudinary settings.');
+      console.error(err);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const closeAll = () => {
@@ -504,20 +520,25 @@ export default function DashboardPage() {
                   onMouseOver={e => (e.currentTarget.style.borderColor = '#000')}
                   onMouseOut={e => (e.currentTarget.style.borderColor = '#e0e0e0')}
                 >
-                  {imagePreview ? (
+                   {imagePreview ? (
                     <div style={{ position: 'relative' }}>
                       <img src={imagePreview} alt="Preview" style={{ width: '100%', height: 160, objectFit: 'cover', borderRadius: 6, display: 'block' }} />
                       <button type="button" onClick={() => { setImagePreview(''); setForm(prev => ({ ...prev, image_url: '' })); }}
                         style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', borderRadius: '50%', width: 28, height: 28, cursor: 'pointer', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                       >×</button>
                     </div>
+                  ) : uploading ? (
+                    <div style={{ color: '#888', padding: '24px 0' }}>
+                      <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>⏳</div>
+                      <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Uploading to Cloudinary...</div>
+                    </div>
                   ) : (
                     <label style={{ cursor: 'pointer', display: 'block' }}>
-                      <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
+                      <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} disabled={uploading} />
                       <div style={{ color: '#888' }}>
                         <div style={{ fontSize: '2rem', marginBottom: 8 }}>📷</div>
                         <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 4 }}>Click to upload photo</div>
-                        <div style={{ fontSize: '0.78rem', color: '#aaa' }}>JPG, PNG, WEBP — max 5MB</div>
+                        <div style={{ fontSize: '0.78rem', color: '#aaa' }}>JPG, PNG, WEBP — max 10MB</div>
                       </div>
                     </label>
                   )}
