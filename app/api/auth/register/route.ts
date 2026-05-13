@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import sql from '@/lib/db';
-import { getSession } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
   try {
@@ -32,15 +31,7 @@ export async function POST(req: NextRequest) {
 
     const user = result[0];
 
-    // Auto-login after registration
-    const session = await getSession();
-    session.userId = user.id;
-    session.username = user.username;
-    session.email = user.email;
-    session.role = user.role;
-    session.isLoggedIn = true;
-    await session.save();
-
+    // Session is handled by NextAuth on the client via signIn('credentials', ...)
     return NextResponse.json({ success: true, user: { username: user.username, role: user.role } });
   } catch (error) {
     console.error('Register error:', error);
