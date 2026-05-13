@@ -59,6 +59,16 @@ export default function AdminPage() {
     return () => window.removeEventListener('pageshow', handlePageShow);
   }, [checkSession]);
 
+  // Disable browser back button while logged in as admin
+  useEffect(() => {
+    window.history.pushState(null, '', window.location.href);
+    const handlePopState = () => {
+      window.history.pushState(null, '', window.location.href);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const loadData = useCallback(async () => {
     const [listRes, userRes, statsRes] = await Promise.all([
       fetch('/api/listings'),

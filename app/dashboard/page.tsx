@@ -75,6 +75,16 @@ export default function DashboardPage() {
     return () => window.removeEventListener('pageshow', handlePageShow);
   }, [checkSession]);
 
+  // Disable browser back button while logged in
+  useEffect(() => {
+    window.history.pushState(null, '', window.location.href);
+    const handlePopState = () => {
+      window.history.pushState(null, '', window.location.href);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
 
   // Load listings
   const loadListings = useCallback(async () => {
