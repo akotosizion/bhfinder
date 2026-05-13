@@ -32,9 +32,9 @@ export default function LoginPage() {
     // Fetch role to redirect correctly
     const me = await fetch('/api/auth/me').then(r => r.json());
     if (me.role === 'admin') {
-      router.push('/admin');
+      router.replace('/admin');
     } else {
-      router.push('/dashboard');
+      router.replace('/dashboard');
     }
   };
 
