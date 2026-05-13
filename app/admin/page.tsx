@@ -38,17 +38,26 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
 
   // Verify admin session
-  useEffect(() => {
-    fetch('/api/auth/me')
-      .then(r => r.json())
-      .then(data => {
-        if (!data.isLoggedIn || data.role !== 'admin') {
-          router.push('/login');
-          return;
-        }
-        setAdminUser({ username: data.username });
-      });
+  const checkSession = useCallback(async () => {
+    const res = await fetch('/api/auth/me', { cache: 'no-store' });
+    const data = await res.json();
+    if (!data.isLoggedIn || data.role !== 'admin') {
+      router.replace('/login');
+      return;
+    }
+    setAdminUser({ username: data.username });
   }, [router]);
+
+  useEffect(() => { checkSession(); }, [checkSession]);
+
+  // Block bfcache back-button access after logout
+  useEffect(() => {
+    const handlePageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) checkSession();
+    };
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, [checkSession]);
 
   const loadData = useCallback(async () => {
     const [listRes, userRes, statsRes] = await Promise.all([

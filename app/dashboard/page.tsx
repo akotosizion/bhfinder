@@ -50,15 +50,27 @@ export default function DashboardPage() {
   const [formError, setFormError] = useState('');
   const [imagePreview, setImagePreview] = useState<string>('');
 
+  const checkSession = useCallback(async () => {
+    const res = await fetch('/api/auth/me', { cache: 'no-store' });
+    const data = await res.json();
+    if (!data.isLoggedIn) { router.replace('/login'); return; }
+    setUser({ userId: data.userId, username: data.username, role: data.role });
+  }, [router]);
+
   // Load session
   useEffect(() => {
-    fetch('/api/auth/me')
-      .then(r => r.json())
-      .then(data => {
-        if (!data.isLoggedIn) { router.push('/login'); return; }
-        setUser({ userId: data.userId, username: data.username, role: data.role });
-      });
-  }, [router]);
+    checkSession();
+  }, [checkSession]);
+
+  // Re-check session when page is restored from browser back-cache (bfcache)
+  useEffect(() => {
+    const handlePageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) checkSession();
+    };
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, [checkSession]);
+
 
   // Load listings
   const loadListings = useCallback(async () => {
