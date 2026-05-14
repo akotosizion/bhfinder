@@ -262,15 +262,17 @@ export default function DashboardPage() {
         </div>
         <div className="nav-actions">
           <button className="btn-post" onClick={openPost}>+ Post Listing</button>
-          <div className="user-chip">
+          <div 
+            className="user-chip"
+            onClick={() => {
+              if (user?.role === 'admin') router.push('/admin');
+            }}
+            style={{ cursor: user?.role === 'admin' ? 'pointer' : 'default' }}
+            title={user?.role === 'admin' ? 'Go to Admin Dashboard' : ''}
+          >
             <i className="ph ph-user-circle" style={{ fontSize: '1.3rem' }} />
             <span>{user?.username || '...'}</span>
           </div>
-          {user?.role === 'admin' && (
-            <button className="btn-post" style={{ background: '#0056b3' }} onClick={() => router.push('/admin')}>
-              Admin
-            </button>
-          )}
           <button className="btn-logout" onClick={handleLogout} title="Logout">
             <i className="ph ph-sign-out" />
           </button>
