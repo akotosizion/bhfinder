@@ -155,7 +155,6 @@ export default function AdminPage() {
           <div className="admin-user">
             <i className="ph ph-user-circle" style={{ fontSize: '1.5rem' }} />
             <span>{adminUser?.username || 'Admin'}</span>
-            <span style={{ background: '#fef3c7', color: '#92400e', padding: '3px 10px', borderRadius: 20, fontSize: '0.78rem', fontWeight: 700 }}>Admin</span>
           </div>
         </div>
 
